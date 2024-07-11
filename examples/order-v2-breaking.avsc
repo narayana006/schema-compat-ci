@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Order",
+  "namespace": "com.example.shop",
+  "fields": [
+    {"name": "order_id", "type": "string"},
+    {"name": "amount_cents", "type": "int"},
+    {"name": "status", "type": {"type": "enum", "name": "OrderStatus", "symbols": ["CREATED", "PAID", "SHIPPED", "REFUNDED"]}},
+    {"name": "coupon", "type": ["null", "string"], "default": null},
+    {"name": "customer_id", "type": "string"}
+  ]
+}

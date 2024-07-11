@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "Order",
+  "namespace": "com.example.shop",
+  "fields": [
+    {"name": "order_id", "type": "string"},
+    {"name": "amount_cents", "type": "long"},
+    {"name": "status", "type": {"type": "enum", "name": "OrderStatus", "symbols": ["CREATED", "PAID", "SHIPPED"]}},
+    {"name": "coupon", "type": ["null", "string"], "default": null},
+    {"name": "legacy_ref", "type": "string"},
+    {"name": "currency", "type": "string", "default": "USD"}
+  ]
+}
