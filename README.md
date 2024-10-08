@@ -114,7 +114,7 @@ Each direction is one reader/writer resolution check as described in the Avro sp
 - **Unions.** Every branch the writer may write must be readable by some branch of the reader (or by the reader's plain type). Making a nullable field required therefore fails; widening a union passes.
 - **Enums.** Every writer symbol must exist in the reader's enum unless that enum declares a default symbol.
 - **Fixed.** Sizes must be equal.
-- **Named types.** Records, enums and fixed types must have the same name, or the reader must list the writer's full name in `aliases`. As in Avro's own compatibility checker, only the unqualified name is compared, so a namespace change alone is not flagged.
+- **Named types.** Records, enums and fixed types must have the same name, or the reader must list the writer's full name in `aliases`. This tool compares only the unqualified name, so a namespace change alone is not flagged.
 - **Arrays, maps, nested and recursive records** are followed, and findings carry the path, such as `Customer.addresses[].zip`.
 
 ## GitHub Action
