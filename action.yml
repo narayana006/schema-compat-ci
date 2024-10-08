@@ -1,0 +1,63 @@
+name: schema-compat-ci
+description: Fail the build when an Avro schema change would break Kafka consumers or producers.
+author: Narayana Vemburaj
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  paths:
+    description: Schema files or directories, separated by spaces.
+    required: false
+    default: "."
+  base-ref:
+    description: >-
+      Git revision to compare with, for example origin/main. The revision must
+      exist in the checkout (use fetch-depth 0 with actions/checkout).
+      Ignored when registry is set.
+    required: false
+    default: ""
+  mode:
+    description: Compatibility mode for the git comparison (BACKWARD, FORWARD, FULL, their _TRANSITIVE variants, or NONE).
+    required: false
+    default: BACKWARD
+  registry:
+    description: Schema Registry URL. When set, the registry is asked instead of comparing with git.
+    required: false
+    default: ""
+  subject-template:
+    description: Registry subject for a file; {name} is the file name without its extension.
+    required: false
+    default: "{name}"
+  python-version:
+    description: Python version used to run the check.
+    required: false
+    default: "3.12"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install schema-compat-ci
+      shell: bash
+      run: python -m pip install --quiet "$GITHUB_ACTION_PATH"
+    - name: Check schemas
+      shell: bash
+      env:
+        SCC_PATHS: ${{ inputs.paths }}
+        SCC_BASE_REF: ${{ inputs.base-ref }}
+        SCC_MODE: ${{ inputs.mode }}
+        SCC_REGISTRY: ${{ inputs.registry }}
+        SCC_SUBJECT_TEMPLATE: ${{ inputs.subject-template }}
+      run: |
+        read -r -a paths <<< "$SCC_PATHS"
+        if [ -n "$SCC_REGISTRY" ]; then
+          schema-compat-ci check --registry "$SCC_REGISTRY" --subject-template "$SCC_SUBJECT_TEMPLATE" "${paths[@]}"
+        elif [ -n "$SCC_BASE_REF" ]; then
+          schema-compat-ci check --base-ref "$SCC_BASE_REF" --mode "$SCC_MODE" "${paths[@]}"
+        else
+          echo "::error::schema-compat-ci: set either base-ref or registry"
+          exit 2
+        fi

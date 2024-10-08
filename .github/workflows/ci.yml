@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: python -m pip install ".[test]"
+      - name: Test
+        run: python -m pytest -q
+      - name: Run the examples
+        run: |
+          schema-compat-ci check --old examples/order-v1.avsc --new examples/order-v2-compatible.avsc --mode FULL
+          if schema-compat-ci check --old examples/order-v1.avsc --new examples/order-v2-breaking.avsc --mode FULL; then
+            echo "the breaking example should have failed" && exit 1
+          fi
+
+  action:
+    # Runs the composite action from this repository against its own examples.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          paths: examples
+          base-ref: HEAD
+          mode: FULL
